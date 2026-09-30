@@ -1,0 +1,137 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  user-select: none;
+}
+
+#game-container { position: relative; width: 100%; height: 100%; }
+
+#game-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+#hud { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---------- 准星 ---------- */
+#crosshair {
+  --gap: 5px; --len: 6px; --thick: 1px; --color: #14161a;
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0; height: 0;
+}
+.ch-line { position: absolute; background: var(--color); box-shadow: 0 0 0 1px rgba(255,255,255,0.95), 0 0 3px rgba(0,0,0,0.6); }
+.ch-top    { width: var(--thick); height: var(--len); left: calc(var(--thick) / -2); bottom: var(--gap); }
+.ch-bottom { width: var(--thick); height: var(--len); left: calc(var(--thick) / -2); top: var(--gap); }
+.ch-left   { width: var(--len); height: var(--thick); top: calc(var(--thick) / -2); right: var(--gap); }
+.ch-right  { width: var(--len); height: var(--thick); top: calc(var(--thick) / -2); left: var(--gap); }
+.ch-dot {
+  position: absolute; width: 2px; height: 2px; left: -1px; top: -1px;
+  background: var(--color); border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.95);
+}
+
+/* ---------- 命中标记 ---------- */
+#hitmarker { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; }
+#hitmarker.show { display: block; }
+#hitmarker span { display: block; width: 18px; height: 18px; position: relative; }
+#hitmarker span::before, #hitmarker span::after {
+  content: ''; position: absolute; background: #fff; width: 2px; height: 100%; left: 8px;
+}
+#hitmarker span::before { transform: rotate(45deg); }
+#hitmarker span::after  { transform: rotate(-45deg); }
+#hitmarker.head span::before, #hitmarker.head span::after { background: #ff4444; }
+#hitmarker.kill span::before, #hitmarker.kill span::after { background: #ff2222; width: 3px; }
+
+/* ---------- 血量 ---------- */
+#health-panel { position: absolute; left: 30px; bottom: 30px; width: 280px; }
+#health-bar {
+  height: 16px; background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 2px; overflow: hidden;
+}
+#health-fill { height: 100%; width: 100%; background: #3ddc84; transition: width 0.15s, background 0.3s; }
+#health-text { color: #1b1e24; font-size: 22px; font-weight: 700; margin-top: 6px; text-shadow: 0 1px 2px rgba(255,255,255,0.7); }
+
+/* ---------- 弹药 ---------- */
+#ammo-panel { position: absolute; right: 30px; bottom: 30px; text-align: right; }
+#weapon-name { color: rgba(0,0,0,0.62); font-size: 15px; text-shadow: 0 1px 1px rgba(255,255,255,0.6); }
+#ammo-text { color: #1b1e24; font-size: 38px; font-weight: 700; text-shadow: 0 1px 2px rgba(255,255,255,0.7); }
+
+/* ---------- 换弹倒计时 ---------- */
+#reload-indicator {
+  position: absolute; right: 44px; bottom: 122px;
+  width: 60px; height: 60px; display: none;
+  align-items: center; justify-content: center;
+}
+#reload-indicator.show { display: flex; }
+#reload-indicator svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.reload-ring-bg { fill: none; stroke: rgba(0,0,0,0.22); stroke-width: 5; }
+.reload-ring {
+  fill: none; stroke: #1b1e24; stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: 175.93; stroke-dashoffset: 175.93;
+}
+#reload-text {
+  position: relative; color: #1b1e24; font-size: 20px; font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.7);
+}
+
+/* ---------- 连杀骷髅特效 ---------- */
+#streak-display {
+  position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
+  font-size: 34px; letter-spacing: 5px; display: flex; gap: 4px;
+  pointer-events: none; white-space: nowrap;
+}
+#streak-display .skull {
+  display: inline-block;
+  animation: skullPop 0.25s ease-out;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.45);
+}
+@keyframes skullPop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.firework {
+  position: absolute; bottom: 175px; left: 50%;
+  font-size: 26px; pointer-events: none;
+  animation: fireworkFly 0.9s ease-out forwards;
+}
+@keyframes fireworkFly {
+  0% { transform: translate(-50%, 0) scale(0.3); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(1.5); opacity: 0; }
+}
+
+/* ---------- 顶部 ---------- */
+#top-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; }
+#round-info { color: #1b1e24; font-size: 16px; font-weight:600; text-shadow: 0 1px 2px rgba(255,255,255,0.7); }
+#kill-feed { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+#kill-feed div { color: #1b1e24; font-size: 13px; background: rgba(255,255,255,0.72); padding: 2px 10px; border-radius: 3px; }
+
+/* ---------- 受伤闪屏 ---------- */
+#damage-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,0,0,0) 40%, rgba(255,0,0,0.5) 100%);
+  opacity: 0; transition: opacity 0.18s;
+}
+#damage-flash.show { opacity: 1; }
+
+/* ---------- 结算界面 ---------- */
+#overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+  display: none; align-items: center; justify-content: center; flex-direction: column;
+  pointer-events: auto; cursor: pointer;
+}
+#overlay-title {
+  color: #fff; font-size: 52px; font-weight: 800; letter-spacing: 4px;
+  text-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+#overlay-sub { color: rgba(255,255,255,0.7); font-size: 18px; margin-top: 14px; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ---------- 提示 ---------- */
+#hint {
+  position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
+  color: rgba(255,255,255,0.85); font-size: 13px; text-align: center;
+  background: rgba(0,0,0,0.4); padding: 8px 14px; border-radius: 4px;
+}

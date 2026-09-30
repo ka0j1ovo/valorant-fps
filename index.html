@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALORANT-Like · 战术射击</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <div id="hud">
+      <!-- 准星 -->
+      <div id="crosshair">
+        <div class="ch-line ch-top"></div>
+        <div class="ch-line ch-bottom"></div>
+        <div class="ch-line ch-left"></div>
+        <div class="ch-line ch-right"></div>
+        <div class="ch-dot"></div>
+      </div>
+
+      <!-- 命中标记 -->
+      <div id="hitmarker"><span></span></div>
+
+      <!-- 血量 -->
+      <div id="health-panel">
+        <div id="health-bar"><div id="health-fill"></div></div>
+        <div id="health-text">100</div>
+      </div>
+
+      <!-- 弹药 -->
+      <div id="ammo-panel">
+        <div id="weapon-name">经典 · Classic</div>
+        <div id="ammo-text">12 / 36</div>
+      </div>
+
+      <!-- 换弹倒计时 -->
+      <div id="reload-indicator">
+        <svg viewBox="0 0 64 64">
+          <circle class="reload-ring-bg" cx="32" cy="32" r="28"></circle>
+          <circle class="reload-ring" cx="32" cy="32" r="28"></circle>
+        </svg>
+        <span id="reload-text">0.0</span>
+      </div>
+
+      <!-- 连杀骷髅特效 -->
+      <div id="streak-display"></div>
+
+      <!-- 顶部信息 -->
+      <div id="top-bar">
+        <div id="round-info">第 1 回合 · 敌人剩余 4</div>
+        <div id="kill-feed"></div>
+      </div>
+
+      <!-- 受伤闪屏 -->
+      <div id="damage-flash"></div>
+
+      <!-- 结算界面 -->
+      <div id="overlay">
+        <div id="overlay-title"></div>
+        <div id="overlay-sub"></div>
+      </div>
+
+      <!-- 提示 -->
+      <div id="hint">点击鼠标锁定视角 · WASD 移动 · 左键射击 · R 换弹 · 1/2/3/4 切换武器 · Shift 静步 · 滚轮切枪</div>
+    </div>
+  </div>
+
+  <script src="js/three.min.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/weapons.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
