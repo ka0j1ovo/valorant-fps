@@ -3,6 +3,8 @@
 一个用 **Three.js (WebGL)** 写的浏览器 FPS 小游戏，玩法致敬《无畏契约》：
 第一人称视角、指针锁定瞄准、命中判定、爆头、后坐力与准星扩散、AI 敌人、回合制。
 
+> 🎮 **在线试玩**：https://ka0j1ovo.github.io/valorant-fps/
+
 ## 如何运行
 
 **方式一（最简单）**：双击 `start.bat`
