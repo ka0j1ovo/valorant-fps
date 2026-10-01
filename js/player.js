@@ -176,8 +176,15 @@ const Player = (function () {
       WEAPONS.tryFire(now, true);
     }
 
-    // 锁头：持续吸附到最近可见敌人头部
-    if (alive) snapToHead();
+    // 开镜缩放状态（先算出来，供锁头与相机使用）
+    const w = WEAPONS.def();
+    const rechamber = WEAPONS.sniperRechamber(now);
+    const isSniper = w.id === 'sniper';
+    sniperScoped = isSniper && ads && rechamber >= 1;
+    const zoomed = ads && !(isSniper && rechamber < 1); // 狙击装填期间回到一倍视野
+
+    // 锁头：开镜后持续吸附到最近可见敌人头部（正常视角不锁）
+    if (alive && zoomed) snapToHead();
 
     // 相机
     camera.position.set(pos.x, pos.y, pos.z);
@@ -185,12 +192,7 @@ const Player = (function () {
     camera.rotation.x = pitch + WEAPONS.getRecoilPitch() * 0.01;
     camera.rotation.z = 0;
 
-    // 开镜缩放（FOV 平滑过渡；狙击开镜倍率更高，开一枪后退镜装填）
-    const w = WEAPONS.def();
-    const rechamber = WEAPONS.sniperRechamber(now);
-    const isSniper = w.id === 'sniper';
-    sniperScoped = isSniper && ads && rechamber >= 1;
-    const zoomed = ads && !(isSniper && rechamber < 1); // 狙击装填期间回到一倍视野
+    // 开镜缩放（FOV 平滑过渡）
     const targetFov = zoomed ? (w.adsFov || 55) : 90;
     camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 12);
     camera.updateProjectionMatrix();
