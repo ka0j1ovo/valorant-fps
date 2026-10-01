@@ -54,6 +54,7 @@ const Audio = (function () {
     if (kind === 'pistol') { noiseBurst(0.12, 2200, 0.5); tone(170, 0.08, 0.28); }
     else if (kind === 'rifle') { noiseBurst(0.10, 1800, 0.5); tone(130, 0.07, 0.28); }
     else if (kind === 'smg') { noiseBurst(0.07, 2600, 0.4); tone(230, 0.05, 0.2); }
+    else if (kind === 'sniper') { noiseBurst(0.22, 800, 0.6); tone(70, 0.18, 0.42, 'sawtooth'); }
     else { noiseBurst(0.05, 3000, 0.2); }
   }
 
@@ -86,6 +87,7 @@ const Audio = (function () {
     enemyDie() { tone(120, 0.4, 0.4, 'sawtooth'); },
     hurt() { noiseBurst(0.2, 800, 0.5); tone(100, 0.2, 0.3, 'sawtooth'); },
     footstep() { noiseBurst(0.06, 500, 0.1); },
+    enemyFootstep() { noiseBurst(0.05, 400, 0.05); }, // 敌人脚步（低音量）
     jump() { tone(400, 0.1, 0.1, 'sine'); },
     win() { [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.22, 0.3, 'triangle'), i * 150)); },
     lose() { [400, 300, 200].forEach((f, i) => setTimeout(() => tone(f, 0.3, 0.3, 'sawtooth'), i * 200)); },

@@ -80,10 +80,12 @@ const MAIN = (function () {
 
       const vm = WEAPONS.viewmodel();
       if (vm) {
+        vm.visible = !Player.sniperScoped; // 狙击开镜时隐藏枪模型
         const kick = WEAPONS.getViewKick();
         WEAPONS.decayViewKick(dt * 4);
         const bob = (Player.isMoving && Player.grounded) ? Math.sin(time * 11) * 0.004 : 0;
-        if (Player.ads) {
+        const centered = Player.ads && WEAPONS.def().id !== 'sniper';
+        if (centered) {
           vm.position.set(0, -0.14 + bob, -0.35 + kick * 0.05); // 开镜枪居中
         } else {
           vm.position.set(0.22, -0.18 + bob, -0.45 + kick * 0.06);
@@ -92,7 +94,14 @@ const MAIN = (function () {
       }
 
       HUD.setBloom((WEAPONS.getBloom() + (Player.isMoving ? 0.6 : 0)) * (Player.ads ? 0.3 : 1));
-      HUD.setReload(WEAPONS.reloadProgress(), WEAPONS.reloadTimeLeft());
+      // 换弹 / 狙击退镜装填动画
+      const now = performance.now() / 1000;
+      const rech = WEAPONS.sniperRechamber(now);
+      if (rech < 1) {
+        HUD.setReload(rech, (1 - rech) * (60 / WEAPONS.def().rpm));
+      } else {
+        HUD.setReload(WEAPONS.reloadProgress(), WEAPONS.reloadTimeLeft());
+      }
 
       if (ENEMIES.getRemaining() <= 0) {
         state = 'won';

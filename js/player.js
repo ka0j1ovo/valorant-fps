@@ -7,7 +7,7 @@ const Player = (function () {
   let yaw = Math.PI, pitch = 0;
   let hp = 100, alive = true, grounded = true, isMoving = false;
   let hitbox = null;
-  let locked = false, mouseDown = false, footstepTimer = 0, lockJustAcquired = false, ads = false;
+  let locked = false, mouseDown = false, footstepTimer = 0, lockJustAcquired = false, ads = false, sniperScoped = false;
   const keys = {};
 
   function init(sc, cam) {
@@ -44,8 +44,9 @@ const Player = (function () {
     const mx = e.movementX, my = e.movementY;
     if (!Number.isFinite(mx) || !Number.isFinite(my)) return;   // 忽略 NaN
     if (Math.abs(mx) > 300 || Math.abs(my) > 300) return;    // 忽略异常大位移，防视角飞走
-    yaw -= mx * 0.0011;
-    pitch -= my * 0.0011;
+    const sens = sniperScoped ? 0.8 : 1; // 狙击开镜灵敏度降低20%
+    yaw -= mx * 0.0011 * sens;
+    pitch -= my * 0.0011 * sens;
     const lim = 1.55;
     if (pitch > lim) pitch = lim;
     if (pitch < -lim) pitch = -lim;
@@ -58,7 +59,7 @@ const Player = (function () {
 
   function onMouseDown(e) {
     Audio.resume();
-    if (e.button === 2) {           // 右键开镜
+    if (e.button === 2) {           // 右键长按开镜
       if (HUD.isOverlayVisible() || !alive) return;
       if (!locked) lock();
       ads = true;
@@ -80,14 +81,15 @@ const Player = (function () {
     Audio.resume();
     keys[e.code] = true;
     if (e.code === 'KeyR' && alive) WEAPONS.startReload();
-    if (e.code === 'Digit1') WEAPONS.switchTo(1);
-    if (e.code === 'Digit2') WEAPONS.switchTo(2);
-    if (e.code === 'Digit3') WEAPONS.switchTo(3);
-    if (e.code === 'Digit4') WEAPONS.switchTo(0);
+    if (e.code === 'Digit1') { ads = false; WEAPONS.switchTo(1); }
+    if (e.code === 'Digit2') { ads = false; WEAPONS.switchTo(2); }
+    if (e.code === 'Digit3') { ads = false; WEAPONS.switchTo(3); }
+    if (e.code === 'Digit4') { ads = false; WEAPONS.switchTo(0); }
+    if (e.code === 'Digit5') { ads = false; WEAPONS.switchTo(4); }
     if (e.code === 'Space') jump();
   }
   function onKeyUp(e) { keys[e.code] = false; }
-  function onWheel(e) { if (locked) WEAPONS.cycle(e.deltaY > 0 ? 1 : -1); }
+  function onWheel(e) { if (locked) { ads = false; WEAPONS.cycle(e.deltaY > 0 ? 1 : -1); } }
 
   function jump() {
     if (grounded && alive) {
@@ -113,7 +115,7 @@ const Player = (function () {
     pos.set(0, EYE, -24);
     vel.set(0, 0, 0);
     yaw = Math.PI; pitch = 0;
-    ads = false;
+    ads = false; sniperScoped = false;
     HUD.setHealth(hp);
   }
 
@@ -167,10 +169,16 @@ const Player = (function () {
     camera.rotation.x = pitch + WEAPONS.getRecoilPitch() * 0.01;
     camera.rotation.z = 0;
 
-    // 开镜缩放（FOV 平滑过渡）
-    const targetFov = ads ? 55 : 90;
+    // 开镜缩放（FOV 平滑过渡；狙击开镜倍率更高，开一枪后退镜装填）
+    const w = WEAPONS.def();
+    const rechamber = WEAPONS.sniperRechamber(now);
+    const isSniper = w.id === 'sniper';
+    sniperScoped = isSniper && ads && rechamber >= 1;
+    const zoomed = ads && !(isSniper && rechamber < 1); // 狙击装填期间回到一倍视野
+    const targetFov = zoomed ? (w.adsFov || 55) : 90;
     camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 12);
     camera.updateProjectionMatrix();
+    HUD.setScope(sniperScoped);
 
     // 命中盒
     hitbox.position.set(pos.x, pos.y - EYE + 0.85, pos.z);
@@ -185,5 +193,6 @@ const Player = (function () {
     get isMoving() { return isMoving; },
     get hp() { return hp; },
     get ads() { return ads; },
+    get sniperScoped() { return sniperScoped; },
   };
 })();

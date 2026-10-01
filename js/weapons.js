@@ -2,9 +2,10 @@
 const WEAPONS = (function () {
   const DEFS = [
     { id: 'knife',   name: '近战 · 战术刀', slot: 0, type: 'melee',   damage: 60, headMult: 1.5, mag: Infinity, reserve: Infinity, rpm: 180, auto: true,  spread: 0,   moveSpread: 0,   recoil: 0.0, bloomPerShot: 0,    reload: 0,   sound: 'knife',  color: 0x8a8f98 },
-    { id: 'classic', name: '经典 · Classic', slot: 1, type: 'hitscan', damage: 26, headMult: 2,   mag: 12,      reserve: 36,      rpm: 400, auto: false, spread: 0.9, moveSpread: 2.0, recoil: 0.5, bloomPerShot: 0.18, reload: 1.05, sound: 'pistol', color: 0x3f4a5a },
-    { id: 'spectre', name: '幽魂 · Spectre', slot: 2, type: 'hitscan', damage: 24, headMult: 2,   mag: 30,      reserve: 90,      rpm: 720, auto: true,  spread: 1.5, moveSpread: 2.8, recoil: 0.35, bloomPerShot: 0.13, reload: 1.4, sound: 'smg',    color: 0x2f4f6f },
-    { id: 'vandal',  name: '狂徒 · Vandal',  slot: 3, type: 'hitscan', damage: 40, headMult: 2,   mag: 25,      reserve: 50,      rpm: 540, auto: true,  spread: 1.2, moveSpread: 3.2, recoil: 0.7, bloomPerShot: 0.16, reload: 1.82, sound: 'rifle',  color: 0x6b3a1f },
+    { id: 'classic', name: '经典 · Classic', slot: 1, type: 'hitscan', damage: 26, headMult: 3,   mag: 12,      reserve: 36,      rpm: 400, auto: false, spread: 0.9, moveSpread: 2.0, recoil: 0.5, bloomPerShot: 0.18, reload: 1.05, sound: 'pistol', color: 0x3f4a5a },
+    { id: 'spectre', name: '幽魂 · Spectre', slot: 2, type: 'hitscan', damage: 26, headMult: 3,   mag: 30,      reserve: 90,      rpm: 720, auto: true,  spread: 1.5, moveSpread: 2.8, recoil: 0.35, bloomPerShot: 0.13, reload: 1.4, sound: 'smg',    color: 0x2f4f6f },
+    { id: 'vandal',  name: '狂徒 · Vandal',  slot: 3, type: 'hitscan', damage: 40, headMult: 4,   mag: 25,      reserve: 50,      rpm: 540, auto: true,  spread: 1.2, moveSpread: 3.2, recoil: 0.7, bloomPerShot: 0.16, reload: 1.82, sound: 'rifle',  color: 0x6b3a1f },
+    { id: 'sniper',  name: '冥狙 · Sniper',  slot: 4, type: 'hitscan', damage: 150, headMult: 2,   mag: 5,       reserve: 10,      rpm: 55,  auto: false, spread: 6,   moveSpread: 8,   recoil: 1.0, bloomPerShot: 0.5,  reload: 3.0,  sound: 'sniper', color: 0x1a1a2e, adsFov: 30 },
   ];
 
   let current = 1;
@@ -88,9 +89,14 @@ const WEAPONS = (function () {
   function getAimDirection(w) {
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
-    let sp = w.spread + (player && player.isMoving ? w.moveSpread : 0) + bloom;
-    if (player && !player.grounded) sp += 2.5;
-    if (player && player.ads) sp *= 0.2; // 开镜大幅提升精度
+    let sp;
+    if (player && player.sniperScoped) {
+      sp = 0; // 狙击开镜：零扩散
+    } else {
+      sp = w.spread + (player && player.isMoving ? w.moveSpread : 0) + bloom;
+      if (player && !player.grounded) sp += 2.5;
+      if (player && player.ads) sp *= 0.2; // 开镜大幅提升精度
+    }
     const rad = sp * Math.PI / 180;
     const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize();
     const up = new THREE.Vector3().crossVectors(right, dir).normalize();
@@ -133,7 +139,7 @@ const WEAPONS = (function () {
     const muzzle = getMuzzleWorldPos();
     const end = hitPoint || origin.clone().add(dir.clone().multiplyScalar(300));
     Effects.tracer(muzzle, end);
-    Effects.muzzleFlash(muzzle);
+    Effects.muzzleFlash(muzzle, w.id === 'spectre' ? 0.5 : 1); // 冲锋枪枪口火焰减半
   }
 
   function doMelee(w) {
@@ -177,10 +183,18 @@ const WEAPONS = (function () {
     vmGroup.children[3].material.color.set(def().color);
   }
 
+  // 狙击枪退镜装填进度：0~1（1=装填完成，可重新开镜）
+  function sniperRechamber(now) {
+    const w = def();
+    if (w.id !== 'sniper') return 1;
+    const cycle = 60 / w.rpm;
+    return Math.max(0, Math.min(1, (now - lastShot) / cycle));
+  }
+
   return {
     init, setPlayer, def, getCurrentIndex, resetAmmo,
     switchTo, cycle, startReload, update, tryFire,
-    buildViewModel, updateViewModel,
+    buildViewModel, updateViewModel, sniperRechamber,
     ammo: () => mags[current],
     reserve: () => reserves[current],
     getRecoilPitch: () => recoilPitch,

@@ -37,7 +37,7 @@ const ENEMIES = (function () {
   class Enemy {
     constructor(x, z) {
       this.pos = new THREE.Vector3(x, 0, z);
-      this.hp = 100;
+      this.hp = 125;
       this.alive = true;
       this.radius = 0.4;
       this.speed = 3.0;
@@ -46,8 +46,11 @@ const ENEMIES = (function () {
       this.aimError = 90;
       this.strafeDir = Math.random() < 0.5 ? -1 : 1;
       this.strafeTimer = 0;
+      this.wanderAngle = Math.random() * Math.PI * 2;
+      this.wanderTimer = 0;
       this.deathTimer = 0;
       this.regenTimer = 0; // 脱离战斗回血计时
+      this.footstepTimer = 0;
       this.buildMesh();
     }
 
@@ -122,14 +125,34 @@ const ENEMIES = (function () {
 
       // 开局即快速向玩家推进，遇到掩体自动绕行继续奔向主角
       this.strafeTimer -= dt;
-      if (this.strafeTimer <= 0) { this.strafeDir *= -1; this.strafeTimer = 0.25 + Math.random() * 0.3; }
+      if (this.strafeTimer <= 0) { this.strafeDir *= -1; this.strafeTimer = 0.12 + Math.random() * 0.15; }
       const strafe = new THREE.Vector3(-dirTo.z, 0, dirTo.x).multiplyScalar(this.strafeDir);
+
+      // 未发现玩家时：随机游走（无序移动）
+      this.wanderTimer -= dt;
+      if (this.wanderTimer <= 0) {
+        this.wanderAngle += (Math.random() - 0.5) * 2.6;
+        this.wanderTimer = 0.4 + Math.random() * 0.9;
+      }
+      const wander = new THREE.Vector3(Math.sin(this.wanderAngle), 0, Math.cos(this.wanderAngle));
+
       if (dist > 2.5) {
         const adv = this.navigate(dirTo).clone();
-        if (hasLOS) adv.addScaledVector(strafe, 0.3).normalize(); // 交火时小幅横向摆动
+        if (hasLOS) {
+          adv.addScaledVector(strafe, 0.6).normalize(); // 交火时无序横向摆动
+        } else {
+          adv.addScaledVector(wander, 0.85).normalize(); // 未发现玩家时无序移动
+        }
         this.move(adv, dt * 1.0);
       } else {
-        this.move(strafe, dt * 0.5);
+        this.move(strafe, dt * 1.0);
+      }
+
+      // 脚步声（近距离低音量）
+      this.footstepTimer -= dt;
+      if (this.footstepTimer <= 0 && dist < 35) {
+        this.footstepTimer = 0.35 + Math.random() * 0.3;
+        Audio.enemyFootstep();
       }
 
       if (hasLOS) {
@@ -141,8 +164,8 @@ const ENEMIES = (function () {
 
       // 脱离战斗后缓慢回血
       this.regenTimer += dt;
-      if (this.regenTimer > 4 && this.hp < 100) {
-        this.hp = Math.min(100, this.hp + dt * 8);
+      if (this.regenTimer > 4 && this.hp < 125) {
+        this.hp = Math.min(125, this.hp + dt * 8);
       }
 
       this.group.position.set(this.pos.x, this.pos.y, this.pos.z);

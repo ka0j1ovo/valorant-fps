@@ -13,11 +13,12 @@ const Effects = (function () {
     tracers.push({ line, life: 0.07 });
   }
 
-  function muzzleFlash(pos) {
-    const light = new THREE.PointLight(0xffdd88, 3, 12, 2);
+  function muzzleFlash(pos, scale) {
+    const s = scale || 1;
+    const light = new THREE.PointLight(0xffdd88, 3 * s, 12, 2);
     light.position.copy(pos);
     scene.add(light);
-    flashes.push({ light, life: 0.05 });
+    flashes.push({ light, life: 0.05, base: 3 * s });
   }
 
   function blood(pos, isHead) { burst(pos, isHead ? 0xff3b3b : 0xcc2222, isHead ? 14 : 8); }
@@ -51,7 +52,7 @@ const Effects = (function () {
     for (let i = flashes.length - 1; i >= 0; i--) {
       const f = flashes[i];
       f.life -= dt;
-      f.light.intensity = 3 * Math.max(0, f.life / 0.05);
+      f.light.intensity = f.base * Math.max(0, f.life / 0.05);
       if (f.life <= 0) { scene.remove(f.light); flashes.splice(i, 1); }
     }
     for (let i = particles.length - 1; i >= 0; i--) {

@@ -69,9 +69,9 @@ const MAP = (function () {
     // 墙壁浅粉（#FF1493 浅色版），箱子浅蓝
     const wallMat = new THREE.MeshStandardMaterial({ map: wallTex('#ffc4dd'), roughness: 0.9 });
     const wallMat2 = new THREE.MeshStandardMaterial({ map: wallTex('#ffaecf'), roughness: 0.9 });
-    const crateBlueLight = new THREE.MeshStandardMaterial({ map: crateTex('#d3ebff'), roughness: 0.9 });
-    const crateBlue = new THREE.MeshStandardMaterial({ map: crateTex('#aad6ff'), roughness: 0.9 });
-    const crateBlueDeep = new THREE.MeshStandardMaterial({ map: crateTex('#86c4ff'), roughness: 0.9 });
+    const crateBlueLight = new THREE.MeshStandardMaterial({ map: crateTex('#d3ebff'), roughness: 0.9, transparent: true, opacity: 0.9 });
+    const crateBlue = new THREE.MeshStandardMaterial({ map: crateTex('#aad6ff'), roughness: 0.9, transparent: true, opacity: 0.9 });
+    const crateBlueDeep = new THREE.MeshStandardMaterial({ map: crateTex('#86c4ff'), roughness: 0.9, transparent: true, opacity: 0.9 });
 
     function box(cx, cz, w, d, h, mat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -116,12 +116,17 @@ const MAP = (function () {
       [-12, -4, 1.6, 1.6, 1.6, crateBlue], [12, -4, 1.6, 1.6, 1.6, crateBlue],
       [-12, 4, 1.6, 1.6, 1.6, crateBlue], [12, 4, 1.6, 1.6, 1.6, crateBlue],
       [-4, -10, 2, 2, 2, crateBlue], [4, -10, 2, 2, 2, crateBlue],
-      [-16, -6, 2, 2, 2, crateBlueDeep], [16, -6, 2, 2, 2, crateBlueDeep],
+      [16, -6, 2, 2, 2, crateBlueDeep],
       [-20, -10, 2, 2, 2, crateBlue], [20, -10, 2, 2, 2, crateBlue],
       [-24, -14, 2, 2, 2.4, crateBlueDeep], [24, -14, 2, 2, 2.4, crateBlueDeep],
       [-20, -2, 1.6, 1.6, 1.6, crateBlueLight], [20, 2, 1.6, 1.6, 1.6, crateBlueLight],
     ];
     crates2.forEach(c => box(c[0], c[1], c[2], c[3], c[4], c[5]));
+
+    // 给所有箱子加编号标签
+    crates.concat(crates2).forEach((c, i) => {
+      makeLabel(scene, String(i + 1), c[0], c[4] + 0.02, c[1]); // 贴在箱子顶面
+    });
 
     world.siteA = makeSite(scene, -18, -18, 'A');
     world.siteB = makeSite(scene, 18, 18, 'B');
@@ -151,6 +156,25 @@ const MAP = (function () {
     light.position.y = 1; g.add(light);
     g.position.set(x, 0, z);
     scene.add(g);
+  }
+
+  // 箱子编号标签（Sprite 始终面向相机）
+  function makeLabel(scene, text, x, y, z) {
+    const cv = document.createElement('canvas');
+    cv.width = 64; cv.height = 64;
+    const g = cv.getContext('2d');
+    g.fillStyle = 'rgba(20, 22, 26, 0.78)';
+    g.beginPath(); g.arc(32, 32, 29, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff';
+    g.font = 'bold 34px Arial';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(text, 32, 34);
+    const tex = new THREE.CanvasTexture(cv);
+    const mat = new THREE.SpriteMaterial({ map: tex, depthWrite: false });
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(0.6, 0.6, 1);
+    sp.position.set(x, y, z);
+    scene.add(sp);
   }
 
   // 圆形碰撞体（半径 radius）对 AABB 的推挤解算

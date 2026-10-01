@@ -20,6 +20,7 @@ const HUD = (function () {
     el.roundInfo = $('round-info');
     el.killFeed = $('kill-feed');
     el.crosshair = $('crosshair');
+    el.scopeOverlay = $('scope-overlay');
     el.hitmarker = $('hitmarker');
     el.damageFlash = $('damage-flash');
     el.overlay = $('overlay');
@@ -71,6 +72,10 @@ const HUD = (function () {
       el.reloadRing.style.strokeDashoffset = (C * (1 - progress)).toFixed(2);
       el.reloadText.textContent = timeLeft.toFixed(1);
     }
+  }
+
+  function setScope(show) {
+    el.scopeOverlay.classList.toggle('show', show);
   }
 
   function killStreak() {
@@ -147,6 +152,7 @@ const HUD = (function () {
     el.overlay.style.display = 'flex';
     overlayVisible = true;
     el.reloadIndicator.classList.remove('show');
+    el.scopeOverlay.classList.remove('show');
     showHint(false);
     if (document.pointerLockElement) document.exitPointerLock();
   }
@@ -165,7 +171,7 @@ const HUD = (function () {
   return {
     init, setDeathCallback, setWinCallback,
     setHealth, refreshWeapon, refreshAmmo,
-    setRound, setRemaining, setBloom, setReload,
+    setRound, setRemaining, setBloom, setReload, setScope,
     killStreak, resetStreak,
     hitmarker, flashDamage, killFeed,
     showDeath, showWin, showOverlay, hideOverlay, isOverlayVisible, showHint,
