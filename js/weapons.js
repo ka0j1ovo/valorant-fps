@@ -6,6 +6,7 @@ const WEAPONS = (function () {
     { id: 'spectre', name: '幽魂 · Spectre', slot: 2, type: 'hitscan', damage: 26, headMult: 3,   mag: 30,      reserve: 90,      rpm: 720, auto: true,  spread: 1.5, moveSpread: 2.8, recoil: 0.35, bloomPerShot: 0.13, reload: 1.4, sound: 'smg',    color: 0x2f4f6f },
     { id: 'vandal',  name: '狂徒 · Vandal',  slot: 3, type: 'hitscan', damage: 40, headMult: 4,   mag: 25,      reserve: 50,      rpm: 540, auto: true,  spread: 1.2, moveSpread: 3.2, recoil: 0.7, bloomPerShot: 0.16, reload: 1.82, sound: 'rifle',  color: 0x6b3a1f },
     { id: 'sniper',  name: '冥狙 · Sniper',  slot: 4, type: 'hitscan', damage: 150, headMult: 2,   mag: 5,       reserve: 10,      rpm: 55,  auto: false, spread: 6,   moveSpread: 8,   recoil: 1.0, bloomPerShot: 0.5,  reload: 3.0,  sound: 'sniper', color: 0x1a1a2e, adsFov: 30 },
+    { id: 'odin',   name: '重机枪 · 奥丁',  slot: 5, type: 'hitscan', damage: 30,  headMult: 3,   mag: 100,     reserve: 200,     rpm: 720, auto: true,  spread: 2.2, moveSpread: 4.2, recoil: 0.5, bloomPerShot: 0.08, reload: 3.8, sound: 'odin',   color: 0x4b5320 },
   ];
 
   const PLAYER_NAME = 'happywei';

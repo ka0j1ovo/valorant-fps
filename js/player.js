@@ -87,6 +87,7 @@ const Player = (function () {
     if (e.code === 'Digit3') { ads = false; WEAPONS.switchTo(3); }
     if (e.code === 'Digit4') { ads = false; WEAPONS.switchTo(0); }
     if (e.code === 'Digit5') { ads = false; WEAPONS.switchTo(4); }
+    if (e.code === 'Digit6') { ads = false; WEAPONS.switchTo(5); }
     if (e.code === 'Space') jump();
   }
   function onKeyUp(e) { keys[e.code] = false; }

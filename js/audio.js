@@ -2,6 +2,7 @@
 const Audio = (function () {
   let ctx = null, master = null, noiseBuf = null;
   let streak = 0, streakTimer = null;
+  let buffers = {}, preloaded = false; // 击杀音效缓冲（原版 mp3）
 
   function ensure() {
     if (!ctx) {
@@ -55,17 +56,40 @@ const Audio = (function () {
     else if (kind === 'rifle') { noiseBurst(0.10, 1800, 0.5); tone(130, 0.07, 0.28); }
     else if (kind === 'smg') { noiseBurst(0.07, 2600, 0.4); tone(230, 0.05, 0.2); }
     else if (kind === 'sniper') { noiseBurst(0.22, 800, 0.6); tone(70, 0.18, 0.42, 'sawtooth'); }
+    else if (kind === 'odin') { noiseBurst(0.14, 900, 0.55); tone(90, 0.1, 0.32, 'sawtooth'); }
     else { noiseBurst(0.05, 3000, 0.2); }
+  }
+
+  // 预加载击杀音效（原版 mp3），加载失败自动回退到程序化合成
+  function preload() {
+    if (preloaded) return;
+    preloaded = true;
+    const c = ensure();
+    if (!c) { preloaded = false; return; }
+    for (let i = 1; i <= 6; i++) {
+      fetch('audio/kill-' + i + '.mp3')
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .then(ab => c.decodeAudioData(ab))
+        .then(buf => { buffers[i] = buf; })
+        .catch(err => console.warn('[audio] 击杀音效加载失败 kill-' + i + '.mp3：', err));
+    }
   }
 
   function kill() {
     streak++;
     clearTimeout(streakTimer);
     streakTimer = setTimeout(() => { streak = 0; }, 10000); // 10 秒内无击杀则连杀清零
-    const n = Math.min(streak, 5);
-    tone([330, 392, 494, 587, 659][n - 1], 0.16, 0.35, 'triangle'); // 连杀音调逐级提高
-    if (n === 5) {
-      [880, 1046, 1318, 1760].forEach((f, i) => setTimeout(() => tone(f, 0.12, 0.3, 'square'), i * 130)); // 五杀滴滴滴滴
+    const n = Math.min(streak, 6);
+    const c = ensure();
+    if (!c) return;
+    const buf = buffers[n];
+    if (buf) {
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(master);
+      src.start();
+    } else {
+      tone([330, 392, 494, 587, 659, 784][n - 1], 0.16, 0.35, 'triangle'); // 回退：程序化合成升调
     }
   }
 
@@ -76,6 +100,7 @@ const Audio = (function () {
 
   return {
     resume: ensure,
+    preload,
     shoot,
     kill,
     resetStreak,

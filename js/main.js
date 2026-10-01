@@ -41,6 +41,7 @@ const MAIN = (function () {
     // 开局面板：选择开镜方式与首关敌人数量
     HUD.showHint(false);
     Settings.init(() => {
+      Audio.preload();
       HUD.showHint(true);
       startRound(1);
     });
