@@ -2,7 +2,7 @@
 const MAIN = (function () {
   let scene, camera, renderer, clock;
   let round = 1;
-  let state = 'playing';
+  let state = 'menu';
   let time = 0;
 
   function init() {
@@ -38,7 +38,12 @@ const MAIN = (function () {
     HUD.setDeathCallback(() => MAIN.restart());
     HUD.setWinCallback(() => MAIN.nextRound());
 
-    startRound(1);
+    // 开局面板：选择开镜方式与首关敌人数量
+    HUD.showHint(false);
+    Settings.init(() => {
+      HUD.showHint(true);
+      startRound(1);
+    });
 
     clock = new THREE.Clock();
     window.addEventListener('resize', onResize);
@@ -48,7 +53,7 @@ const MAIN = (function () {
   function startRound(n) {
     round = n;
     state = 'playing';
-    const count = Math.min(3 + n, 12); // 每回合敌人 +1
+    const count = Math.min(Settings.getFirstRoundCount() + (n - 1), 12); // 首关可选 5~10，之后每回合 +1
     WEAPONS.resetAmmo();
     ENEMIES.spawn(count);
     Player.respawn();

@@ -14,6 +14,7 @@ const Player = (function () {
     scene = sc; camera = cam;
     camera.position.copy(pos);
     camera.rotation.order = 'YXZ';
+    camera.rotation.y = yaw; // 初始朝北，菜单背景可见地图
 
     hitbox = new THREE.Mesh(
       new THREE.BoxGeometry(0.6, 1.7, 0.6),
@@ -59,10 +60,10 @@ const Player = (function () {
 
   function onMouseDown(e) {
     Audio.resume();
-    if (e.button === 2) {           // 右键长按开镜
+    if (e.button === 2) {           // 右键开镜（长按或点击，取决于设置）
       if (HUD.isOverlayVisible() || !alive) return;
       if (!locked) lock();
-      ads = true;
+      ads = Settings.getAdsMode() === 'toggle' ? !ads : true;
       return;
     }
     if (e.button !== 0) return;
@@ -74,7 +75,7 @@ const Player = (function () {
   }
   function onMouseUp(e) {
     if (e.button === 0) mouseDown = false;
-    if (e.button === 2) ads = false;
+    if (e.button === 2 && Settings.getAdsMode() === 'hold') ads = false;
   }
 
   function onKeyDown(e) {

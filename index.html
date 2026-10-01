@@ -73,7 +73,33 @@
       </div>
 
       <!-- 提示 -->
-      <div id="hint">点击鼠标锁定视角 · WASD 移动 · 左键射击 · 右键长按开镜 · R 换弹 · 1/2/3/4/5 切换武器 · Shift 静步 · 滚轮切枪</div>
+      <div id="hint">点击鼠标锁定视角 · WASD 移动 · 左键射击 · 右键开镜 · R 换弹 · 1/2/3/4/5 切换武器 · Shift 静步 · 滚轮切枪</div>
+    </div>
+
+    <!-- 开始面板 -->
+    <div id="start-panel">
+      <div id="start-panel-box">
+        <h1>战术射击</h1>
+        <div class="setting-row">
+          <span class="setting-label">开镜方式</span>
+          <div class="setting-options" id="ads-mode">
+            <button class="opt" data-value="hold">长按开镜</button>
+            <button class="opt" data-value="toggle">点击开镜</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">首关敌人数量</span>
+          <div class="setting-options" id="round-count">
+            <button class="opt" data-value="5">5</button>
+            <button class="opt" data-value="6">6</button>
+            <button class="opt" data-value="7">7</button>
+            <button class="opt" data-value="8">8</button>
+            <button class="opt" data-value="9">9</button>
+            <button class="opt" data-value="10">10</button>
+          </div>
+        </div>
+        <button id="start-btn">开始游戏</button>
+      </div>
     </div>
   </div>
 
@@ -83,6 +109,7 @@
   <script src="js/map.js"></script>
   <script src="js/weapons.js"></script>
   <script src="js/enemy.js"></script>
+  <script src="js/settings.js"></script>
   <script src="js/player.js"></script>
   <script src="js/hud.js"></script>
   <script src="js/main.js"></script>
