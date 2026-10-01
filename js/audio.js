@@ -2,7 +2,7 @@
 const Audio = (function () {
   let ctx = null, master = null, noiseBuf = null;
   let streak = 0, streakTimer = null;
-  let buffers = {}, preloaded = false; // 击杀音效缓冲（原版 mp3）
+  let killEls = {}, preloaded = false; // 击杀音效（原版 mp3，<audio> 元素）
 
   function ensure() {
     if (!ctx) {
@@ -60,18 +60,18 @@ const Audio = (function () {
     else { noiseBurst(0.05, 3000, 0.2); }
   }
 
-  // 预加载击杀音效（原版 mp3），加载失败自动回退到程序化合成
+  // 预加载击杀音效（原版 mp3）。用 <audio> 元素而非 fetch，
+  // 这样本地直接 file:// 打开也能播放（fetch 在 file:// 下会被浏览器拦截）。
   function preload() {
     if (preloaded) return;
     preloaded = true;
-    const c = ensure();
-    if (!c) { preloaded = false; return; }
     for (let i = 1; i <= 6; i++) {
-      fetch('audio/kill-' + i + '.mp3')
-        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
-        .then(ab => c.decodeAudioData(ab))
-        .then(buf => { buffers[i] = buf; })
-        .catch(err => console.warn('[audio] 击杀音效加载失败 kill-' + i + '.mp3：', err));
+      const a = document.createElement('audio');
+      a.src = 'audio/kill-' + i + '.mp3';
+      a.preload = 'auto';
+      a.volume = 0.5; // 与程序化音效的 master 音量保持一致
+      a.addEventListener('error', () => console.warn('[audio] 击杀音效加载失败 kill-' + i + '.mp3'));
+      killEls[i] = a;
     }
   }
 
@@ -80,14 +80,10 @@ const Audio = (function () {
     clearTimeout(streakTimer);
     streakTimer = setTimeout(() => { streak = 0; }, 10000); // 10 秒内无击杀则连杀清零
     const n = Math.min(streak, 6);
-    const c = ensure();
-    if (!c) return;
-    const buf = buffers[n];
-    if (buf) {
-      const src = c.createBufferSource();
-      src.buffer = buf;
-      src.connect(master);
-      src.start();
+    const a = killEls[n];
+    if (a) {
+      try { a.currentTime = 0; } catch (e) { /* 忽略 */ }
+      a.play().catch(() => {});
     } else {
       tone([330, 392, 494, 587, 659, 784][n - 1], 0.16, 0.35, 'triangle'); // 回退：程序化合成升调
     }
