@@ -5,6 +5,12 @@ const ENEMIES = (function () {
   let spawnPoints = [];
   let remaining = 0;
 
+  const BOT_NAMES = [
+    'slowly', 'Scales', 'Splash', 'Erv', 'SiuFatBB', 'CHICHOO', 'nobody', 'ZmjjKK',
+    'Smoggy', 'stew', 'Rarga', 'NoMan', 'Lysoar', 'WsLeo', 'whzy', 'Knight',
+    'nephh', 'rushia',
+  ];
+
   function init(sc, cam, player) { scene = sc; camera = cam; playerObj = player; }
   function setSpawnPoints(p) { spawnPoints = p; }
 
@@ -20,9 +26,10 @@ const ENEMIES = (function () {
     const filtered = spawnPoints.filter(p => p.z >= -11);
     const pool = filtered.length ? filtered : spawnPoints;
     const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+    const names = BOT_NAMES.slice().sort(() => Math.random() - 0.5); // 随机打乱名字
     for (let i = 0; i < count; i++) {
       const sp = shuffled[i % shuffled.length];
-      list.push(new Enemy(sp.x + (Math.random() * 3 - 1.5), sp.z + (Math.random() * 3 - 1.5)));
+      list.push(new Enemy(sp.x + (Math.random() * 3 - 1.5), sp.z + (Math.random() * 3 - 1.5), names[i % names.length]));
     }
   }
 
@@ -35,8 +42,9 @@ const ENEMIES = (function () {
   function onKill() { remaining = Math.max(0, remaining - 1); HUD.setRemaining(remaining); }
 
   class Enemy {
-    constructor(x, z) {
+    constructor(x, z, name) {
       this.pos = new THREE.Vector3(x, 0, z);
+      this.name = name;
       this.hp = 125;
       this.alive = true;
       this.radius = 0.4;
@@ -247,7 +255,20 @@ const ENEMIES = (function () {
     return raycaster.intersectObjects(MAP.world.shootables, false).length === 0;
   }
 
+  // 返回距离最近、且玩家可直接看到的存活敌人（供锁头使用）
+  function getVisibleEnemy() {
+    let best = null, bestDist = Infinity;
+    for (const e of list) {
+      if (!e.alive || !hasLineOfSight(e, playerObj)) continue;
+      const dx = e.pos.x - playerObj.pos.x;
+      const dz = e.pos.z - playerObj.pos.z;
+      const d = dx * dx + dz * dz;
+      if (d < bestDist) { bestDist = d; best = e; }
+    }
+    return best;
+  }
+
   function update(dt) { list.forEach(e => e.update(dt)); }
 
-  return { init, setSpawnPoints, spawn, clear, getMeshes, getRemaining, onKill, update, getList: () => list };
+  return { init, setSpawnPoints, spawn, clear, getMeshes, getRemaining, onKill, update, getVisibleEnemy, getList: () => list };
 })();

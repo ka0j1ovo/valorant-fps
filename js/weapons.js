@@ -8,6 +8,8 @@ const WEAPONS = (function () {
     { id: 'sniper',  name: '冥狙 · Sniper',  slot: 4, type: 'hitscan', damage: 150, headMult: 2,   mag: 5,       reserve: 10,      rpm: 55,  auto: false, spread: 6,   moveSpread: 8,   recoil: 1.0, bloomPerShot: 0.5,  reload: 3.0,  sound: 'sniper', color: 0x1a1a2e, adsFov: 30 },
   ];
 
+  const PLAYER_NAME = 'happywei';
+
   let current = 1;
   let mags = DEFS.map(d => d.mag);
   let reserves = DEFS.map(d => d.reserve);
@@ -131,7 +133,7 @@ const WEAPONS = (function () {
         HUD.hitmarker(isHead, killed);
         if (isHead) Audio.headshot(); else Audio.hit();
         Effects.blood(h.point, isHead);
-        if (killed) { ENEMIES.onKill(); Audio.enemyDie(); Audio.kill(); HUD.killStreak(); HUD.killFeed(isHead ? '爆头击杀!' : '击杀敌人'); }
+        if (killed) { ENEMIES.onKill(); Audio.enemyDie(); Audio.kill(); HUD.killStreak(); HUD.killFeed(PLAYER_NAME + (isHead ? ' 爆头击杀 ' : ' 击杀 ') + ud.enemy.name); }
       } else {
         Effects.spark(h.point, h.face ? h.face.normal : null);
       }
@@ -155,7 +157,7 @@ const WEAPONS = (function () {
         HUD.hitmarker(true, killed);
         Audio.headshot();
         Effects.blood(h.point, true);
-        if (killed) { ENEMIES.onKill(); Audio.enemyDie(); Audio.kill(); HUD.killStreak(); HUD.killFeed('近战击杀'); }
+        if (killed) { ENEMIES.onKill(); Audio.enemyDie(); Audio.kill(); HUD.killStreak(); HUD.killFeed(PLAYER_NAME + ' 近战击杀 ' + ud.enemy.name); }
       }
     }
   }

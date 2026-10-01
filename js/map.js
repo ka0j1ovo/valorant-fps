@@ -69,9 +69,9 @@ const MAP = (function () {
     // 墙壁浅粉（#FF1493 浅色版），箱子浅蓝
     const wallMat = new THREE.MeshStandardMaterial({ map: wallTex('#ffc4dd'), roughness: 0.9 });
     const wallMat2 = new THREE.MeshStandardMaterial({ map: wallTex('#ffaecf'), roughness: 0.9 });
-    const crateBlueLight = new THREE.MeshStandardMaterial({ map: crateTex('#d3ebff'), roughness: 0.9, transparent: true, opacity: 0.9 });
-    const crateBlue = new THREE.MeshStandardMaterial({ map: crateTex('#aad6ff'), roughness: 0.9, transparent: true, opacity: 0.9 });
-    const crateBlueDeep = new THREE.MeshStandardMaterial({ map: crateTex('#86c4ff'), roughness: 0.9, transparent: true, opacity: 0.9 });
+    const crateBlueLight = new THREE.MeshStandardMaterial({ map: crateTex('#d3ebff'), roughness: 0.9, transparent: true, opacity: 0.97 });
+    const crateBlue = new THREE.MeshStandardMaterial({ map: crateTex('#aad6ff'), roughness: 0.9, transparent: true, opacity: 0.97 });
+    const crateBlueDeep = new THREE.MeshStandardMaterial({ map: crateTex('#86c4ff'), roughness: 0.9, transparent: true, opacity: 0.97 });
 
     function box(cx, cz, w, d, h, mat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);

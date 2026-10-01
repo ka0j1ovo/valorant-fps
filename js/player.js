@@ -120,6 +120,18 @@ const Player = (function () {
     HUD.setHealth(hp);
   }
 
+  // 锁头：若开启，把准星吸附到最近且可见敌人的头部
+  function snapToHead() {
+    if (!Settings.getHeadlock()) return;
+    const target = ENEMIES.getVisibleEnemy();
+    if (!target) return;
+    const head = new THREE.Vector3(target.pos.x, 1.55, target.pos.z).sub(pos).normalize();
+    yaw = Math.atan2(-head.x, -head.z);
+    pitch = Math.asin(Math.max(-1, Math.min(1, head.y)));
+    if (pitch > 1.55) pitch = 1.55;
+    if (pitch < -1.55) pitch = -1.55;
+  }
+
   function update(dt) {
     const now = performance.now() / 1000;
     let mx = 0, mz = 0;
@@ -164,6 +176,9 @@ const Player = (function () {
       WEAPONS.tryFire(now, true);
     }
 
+    // 锁头：持续吸附到最近可见敌人头部
+    if (alive) snapToHead();
+
     // 相机
     camera.position.set(pos.x, pos.y, pos.z);
     camera.rotation.y = yaw;
@@ -186,7 +201,7 @@ const Player = (function () {
   }
 
   return {
-    init, update, takeDamage, respawn,
+    init, update, takeDamage, respawn, snapToHead,
     pos,
     get hitbox() { return hitbox; },
     get alive() { return alive; },
